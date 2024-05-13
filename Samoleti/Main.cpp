@@ -1,45 +1,67 @@
+#include "Planes.h"
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <string>
-#include "Planes.h"
-#include "PrintRoute.h"
 
 using namespace std;
 
+// Функция для разделения строки на слова
+vector<string> split(const string& s, char delimiter) {
+    vector<string> tokens;
+    string token;
+    istringstream tokenStream(s);
+    while (getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
 int main() {
     string command;
-    while (getline(cin, command)) {
+    while (true) {
+        cout << "Enter command (or 'exit' to quit): ";
+        getline(cin, command);
+
+        if (command == "exit") {
+            break;
+        }
+
         istringstream iss(command);
         string action;
         iss >> action;
 
         if (action == "CREATE_PLANE") {
-            string name;
-            vector<string> route;
-            string town;
-            iss >> name; // Имя самолёта
-            while (iss >> town) {
-                route.push_back(town);
+            string routeStr;
+            getline(iss >> ws, routeStr); // Чтение строки с пробелами
+            vector<string> route = split(routeStr, ' ');
+            if (route.size() < 2) {
+                cout << "Invalid route. It should contain at least two cities." << endl;
+                continue;
             }
-            Airplane plane(name, route);
+            string name = route[0];
+            route.erase(route.begin()); // Удаляем первый элемент (название самолёта)
+            Airplane airplane(name, route);
+            cout << "Plane " << name << " created with route: ";
+            for (const auto& city : route) {
+                cout << city << " ";
+            }
+            cout << endl;
         } else if (action == "PLANES_FOR_TOWN") {
             string town;
             iss >> town;
-            printPlanesForTown(town, Airplane::planesForTown);
+            Airplane::planesForTown(town);
         } else if (action == "TOWNS_FOR_PLANE") {
-            string plane;
-            iss >> plane;
-            printTownsForPlane(plane, Airplane::townsForPlane);
+            string planeName;
+            iss >> planeName;
+            Airplane::townsForPlane(planeName);
         } else if (action == "PLANE") {
-            string plane;
-            iss >> plane;
-            // Тут нужно найти самолёт по имени и вызвать его метод printRoute()
-            // Но мы не знаем какие самолёты были созданы, поэтому этот код не может быть реализован
-            // здесь. Он должен быть реализован внутри класса Airplane или в отдельном месте.
+            string planeName;
+            iss >> planeName;
+            Airplane::printPlaneRoute(planeName);
         } else {
-            cout << "Unknown command" << endl;
+            cout << "Unknown command." << endl;
         }
     }
+
     return 0;
 }
